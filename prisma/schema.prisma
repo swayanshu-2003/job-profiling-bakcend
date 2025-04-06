@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  role        Role     @default(JOB_SEEKER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  seekerProfile  SeekerProfile?
+  recruiterProfile RecruiterProfile?
+}
+
+model SeekerProfile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  firstName   String
+  lastName    String
+  phone       String
+  resume      String?
+  skills      String[]
+  experience  Int?
+  education   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  applications JobApplication[]
+}
+
+model RecruiterProfile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  companyName String
+  companySize String?
+  website     String?
+  phone       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  jobs        Job[]
+}
+
+model Job {
+  id           Int      @id @default(autoincrement())
+  recruiterId  Int
+  recruiter    RecruiterProfile @relation(fields: [recruiterId], references: [id])
+  title        String
+  description  String
+  location     String
+  salaryRange  String?
+  type         String
+  requirements String[]
+  status       JobStatus @default(ACTIVE)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id          Int      @id @default(autoincrement())
+  jobId       Int
+  seekerId    Int
+  job         Job      @relation(fields: [jobId], references: [id])
+  seeker      SeekerProfile @relation(fields: [seekerId], references: [userId])
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  JOB_SEEKER
+  RECRUITER
+}
+
+enum JobStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
