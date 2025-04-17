@@ -113,9 +113,15 @@ router.get(
   async (req, res) => {
     console.log(req?.user.id);
     try {
+      const recruiter = await prisma.recruiterProfile.findUnique({  
+        where: { userId: req.user.id },
+      })
+      if(!recruiter){
+        return res.status(403).json({ message: "recruiter not found" });
+      }
       const jobs = await prisma.job.findMany({
         where: {
-          recruiterId: req.user.id,
+          recruiterId: recruiter?.id,
         },
         include: {
           recruiter: { select: { companyName: true } },
