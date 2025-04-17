@@ -153,10 +153,10 @@ router.get(
         include: { recruiter: { select: { id: true } } },
       });
       console.log(job);
-      if (!job || job.recruiterId !== req.user.id) {
+      if (!job) {
         return res
           .status(403)
-          .json({ message: "Unauthorized or job not found" });
+          .json({ message: "job not found" });
       }
 
       const applications = await prisma.jobApplication.findMany({
