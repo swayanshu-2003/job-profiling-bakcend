@@ -17,6 +17,12 @@ router.post(
       if (!title || !description || !location || !type) {
         return res.status(400).json({ message: "Required fields missing" });
       }
+      const recruiter = await prisma.recruiterProfile.findUnique({  
+        where: { userId: req.user.id },
+      })
+      if(!recruiter){
+        return res.status(403).json({ message: "recruiter not found" });
+      }
 
       const job = await prisma.job.create({
         data: {
@@ -26,7 +32,7 @@ router.post(
           salaryRange,
           type,
           requirements,
-          recruiterId: req.user.id,
+          recruiterId: recruiter?.id,
         },
       });
 
